@@ -2,6 +2,7 @@ import sys
 import cv2
 import math
 import time
+import os
 import mediapipe as mp
 import pyttsx3
 from PyQt6.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
@@ -272,7 +273,7 @@ class MainWindow(QMainWindow):
         save_type = "manual" if self.sender() == self.capture_btn else "auto"
         filename = f"{subject_id}_{save_type}_{timestamp}.png"
         cv2.imwrite(filename, self.video_thread.current_frame)
-        self.speak(f"已保存姿势数据: {filename}")
+        self.speak(f"已保存姿势数据")
 
     @pyqtSlot(str)
     def speak(self, message):
@@ -289,7 +290,14 @@ class MainWindow(QMainWindow):
         self.video_thread.wait(3000)
         event.accept()
 
+def fix_qt_plugin_path():
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable)
+        plugin_path = os.path.join(base_path, 'PyQt6', 'Qt', 'plugins')
+        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
+
 if __name__ == "__main__":
+    fix_qt_plugin_path()  
     app = QApplication(sys.argv)
     app.setFont(QFont("Arial", 12))
     window = MainWindow()
